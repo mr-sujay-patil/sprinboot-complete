@@ -1,0 +1,43 @@
+# --- Server ---
+server:
+  # WHY: Unique port to coexist with auth-server (9090) and ai-service (9091)
+  port: 9092
+
+# --- Database ---
+# WHY: Configuration for the in-memory H2 database and JPA/Hibernate mapping
+spring:
+  application:
+    name: task-service # WHY: Eureka uses this application name as the service ID (VIP) for Gateway routing lookup.
+  datasource:
+    # WHY: Connects to an in-memory database named 'taskdb' that resets on application restart
+    url: jdbc:h2:mem:taskdb
+    driverClassName: org.h2.Driver
+    # WHY: Default H2 admin user
+    username: sa
+    password:
+  h2:
+    console:
+      # WHY: Allows us to inspect the database via http://localhost:9092/h2-console
+      enabled: true
+      path: /h2-console
+  jpa:
+    # WHY: Tells Hibernate to use H2-specific SQL dialects
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      # WHY: Automatically updates the DB schema based on @Entity classes. Useful for dev, dangerous for production.
+      ddl-auto: update
+    # WHY: Logs the generated SQL to the console so we can see what queries JPA is executing
+    show-sql: true
+
+# --- JWT Validation ---
+# WHY: Must match auth-server's jwt.secret exactly (HMAC-SHA256 shared secret) to validate tokens issued by it
+jwt:
+  secret: ${JWT_SECRET:YXV0aHNlcnZlcnNlY3JldGtleWZvcmF1dGhlbnRpY2F0aW9uamF2YWZ1bGxzdGFja3NlY3JldGtleQ==}
+
+# --- Eureka Client Configuration ---
+# NOTE: No Java code changes (@EnableEurekaClient or @EnableDiscoveryClient) are needed in Spring Boot 3+/4+.
+# Simply placing 'spring-cloud-starter-netflix-eureka-client' on the classpath triggers auto-registration.
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka/} # WHY: Supports Docker network hostname override (eureka-server:8761).

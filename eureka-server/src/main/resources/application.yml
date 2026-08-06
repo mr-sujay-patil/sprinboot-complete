@@ -1,0 +1,11 @@
+server:
+  port: 8761 # WHY: 8761 is the standard default port for Eureka servers, making it easy to identify.
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    register-with-eureka: false # WHY: Since this is the Eureka Server itself, it shouldn't register with its own database.
+    fetch-registry: false # WHY: The server doesn't need to fetch registry updates from other registries; it holds the local registry.
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/ # WHY: Defines the URL where Eureka clients will look for the server to register or query instances.

@@ -1,0 +1,37 @@
+server:
+  port: 9090 # WHY: Running on a non-default port to avoid conflicts with other microservices (which usually run on 8080).
+
+# spring configuration
+spring:
+  application:
+    name: auth-server # WHY: Eureka uses this application name as the service ID (VIP) for Gateway lookup.
+  datasource:
+    # WHY: Using H2 in-memory DB for simplicity. Data is lost when app stops.
+    url: jdbc:h2:mem:authdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password: 
+  h2:
+    console:
+      enabled: true # WHY: Enables a web-based DB viewer at /h2-console for easy inspection.
+      path: /h2-console
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update # WHY: Automatically updates DB schema based on @Entity classes (only for dev/learning).
+    show-sql: true # WHY: Prints SQL statements to console to understand Hibernate's underlying operations.
+
+# custom jwt properties
+jwt:
+  # WHY: Supports environment variable override (JWT_SECRET) with fallback for local runs.
+  secret: ${JWT_SECRET:YXV0aHNlcnZlcnNlY3JldGtleWZvcmF1dGhlbnRpY2F0aW9uamF2YWZ1bGxzdGFja3NlY3JldGtleQ==}
+  # WHY: Token expiration time in milliseconds (1 hour here). Short expiration reduces risk if token is stolen.
+  expiration-ms: 3600000
+
+# --- Eureka Client Configuration ---
+# NOTE: No Java code changes (@EnableEurekaClient or @EnableDiscoveryClient) are needed in Spring Boot 3+/4+.
+# Simply placing 'spring-cloud-starter-netflix-eureka-client' on the classpath triggers auto-registration.
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka/} # WHY: Supports Docker network hostname override (eureka-server:8761).

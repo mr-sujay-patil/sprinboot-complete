@@ -1,0 +1,55 @@
+# Server runs on 9091 to coexist with auth-server on 9090
+server:
+  port: 9091
+
+# spring configuration
+spring:
+  application:
+    name: ai-service # WHY: Eureka uses this application name as the service ID (VIP) for Gateway routing lookup.
+
+# --- Multi-Provider AI Configuration ---
+# WHY: We define multiple providers under a custom 'ai' prefix.
+# Switching providers requires ONLY changing 'active-provider' — no code changes.
+# This works because OpenRouter, OpenAI, and most LLM providers expose 
+# OpenAI-compatible REST APIs (same /v1/chat/completions contract).
+ai:
+  active-provider: openrouter
+  providers:
+    openrouter:
+      base-url: https://openrouter.ai/api/v1
+      api-key: ${OPENROUTER_API_KEY:sk-placeholder}
+      model: meta-llama/llama-3.1-8b-instruct
+    openai:
+      base-url: https://api.openai.com/v1
+      api-key: ${OPENAI_API_KEY:sk-placeholder}
+      model: gpt-4o-mini
+    # WHY: To add a new provider, just add another entry here.
+    # No code changes needed — the config class reads the active provider dynamically.
+    # Example for a custom/local provider:
+    # local-llm:
+    #   base-url: http://localhost:11434/v1
+    #   api-key: not-needed
+    #   model: llama3
+
+# --- JWT Validation Configuration ---
+# WHY: This secret MUST match the auth-server's jwt.secret exactly.
+# Both services use HMAC-SHA256 (symmetric), so the same key is used to sign (auth-server) and verify (this service).
+# In production, use asymmetric keys (RS256) so the consumer only needs the public key.
+jwt:
+  secret: ${JWT_SECRET:YXV0aHNlcnZlcnNlY3JldGtleWZvcmF1dGhlbnRpY2F0aW9uamF2YWZ1bGxzdGFja3NlY3JldGtleQ==}
+
+# --- Disable Spring AI's auto-configuration ---
+# WHY: We configure the ChatModel manually in AiProviderConfig to support multi-provider switching.
+# The auto-config would try to create its own bean using spring.ai.openai.* properties, which we don't use.
+spring:
+  ai:
+    openai:
+      enabled: false
+
+# --- Eureka Client Configuration ---
+# NOTE: No Java code changes (@EnableEurekaClient or @EnableDiscoveryClient) are needed in Spring Boot 3+/4+.
+# Simply placing 'spring-cloud-starter-netflix-eureka-client' on the classpath triggers auto-registration.
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka/} # WHY: Supports Docker network hostname override (eureka-server:8761).

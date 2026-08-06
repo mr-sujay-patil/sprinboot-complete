@@ -1,0 +1,110 @@
+# Compose v2 syntax (no version key required)
+
+networks:
+  # WHY: Creates an isolated user-defined bridge network. Containers attached to this network can communicate 
+  # with each other using their Docker service names (e.g. eureka-server:8761) via Docker's embedded DNS server.
+  microservices-net:
+    driver: bridge
+
+services:
+  # --- Service Discovery Registry ---
+  eureka-server:
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - microservices-net
+    healthcheck:
+      # WHY: Spring Boot Actuator /actuator/health is polled by Docker to determine actual application readiness.
+      # depends_on alone only checks process startup, not JVM/Spring context initialization.
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8761/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # --- Authentication Microservice ---
+  auth-server:
+    build:
+      context: ./auth-server
+      dockerfile: Dockerfile
+    container_name: auth-server
+    ports:
+      - "9090:9090"
+    networks:
+      - microservices-net
+    environment:
+      # WHY: Secrets are injected from host environment / .env file using ${VAR} syntax rather than hardcoding.
+      - JWT_SECRET=${JWT_SECRET}
+      # WHY: Inter-container networking requires container hostname 'eureka-server' instead of 'localhost', 
+      # because inside a container 'localhost' resolves to that container's isolated network namespace.
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_SERVER_URL}
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    # VOLUMES PERSISTENCE NOTE:
+    # H2 is currently running in-memory (jdbc:h2:mem:authdb) so data resets on restart. 
+    # To persist data: map a volume here (e.g. volumes: - auth-db-data:/app/data) 
+    # and change spring.datasource.url to jdbc:h2:file:/app/data/authdb in application.yml.
+
+  # --- Spring AI Microservice ---
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: ai-service
+    ports:
+      - "9091:9091"
+    networks:
+      - microservices-net
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_SERVER_URL}
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+
+  # --- Task CRUD Microservice ---
+  task-service:
+    build:
+      context: ./task-service
+      dockerfile: Dockerfile
+    container_name: task-service
+    ports:
+      - "9092:9092"
+    networks:
+      - microservices-net
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_SERVER_URL}
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+
+  # --- API Gateway Microservice ---
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      # WHY: Exposing port 8080 to host lets external clients (e.g., Postman/curl on developer host) access all services through the gateway.
+      - "8080:8080"
+    networks:
+      - microservices-net
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_SERVER_URL}
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      auth-server:
+        condition: service_started
+      ai-service:
+        condition: service_started
+      task-service:
+        condition: service_started

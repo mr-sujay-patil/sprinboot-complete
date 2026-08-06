@@ -1,0 +1,36 @@
+# WHY THIS ARCHITECTURE:
+# Client -> API Gateway (8080) -> Eureka Lookup -> Target Service (e.g. auth-server)
+# The gateway is the single entry point. Instead of hardcoding target URLs/ports,
+# it asks Eureka where 'auth-server' is, then dynamically routes/load balances.
+
+server:
+  port: 8080 # WHY: Gateway runs on the standard default user port 8080 as the main entry point.
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        # --- Auth Server Route ---
+        - id: auth-route
+          uri: lb://auth-server # WHY: lb:// protocol instructs Gateway to lookup the location via Eureka and apply load balancing across instances of 'auth-server'.
+          predicates:
+            - Path=/api/auth/** # WHY: Routes any request starting with /api/auth/ to the auth-server.
+
+        # --- AI Service Route ---
+        - id: ai-route
+          uri: lb://ai-service # WHY: Dynamically retrieves 'ai-service' host and port from Eureka, load balancing if multiple instances run.
+          predicates:
+            - Path=/api/ai/**
+
+        # --- Task CRUD Service Route ---
+        - id: task-route
+          uri: lb://task-service # WHY: Resolves the dynamic host/port for 'task-service' registered instances in Eureka.
+          predicates:
+            - Path=/api/tasks/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka/} # WHY: Connects to the service discovery server to fetch the registry map.
