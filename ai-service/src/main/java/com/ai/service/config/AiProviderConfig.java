@@ -15,12 +15,9 @@ package com.ai.service.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.openai.OpenAiChatModel;
-import org.springframework.ai.openai.OpenAiChatOptions;
-import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestClient;
 
 @Configuration
 @RequiredArgsConstructor
@@ -30,38 +27,16 @@ public class AiProviderConfig {
     private final AiProviderProperties properties;
 
     @Bean
-    public OpenAiApi openAiApi() {
+    public RestClient openRouterRestClient() {
         AiProviderProperties.ProviderConfig active = properties.active();
-        log.info("Initializing OpenAiApi with provider: {}", properties.activeProvider());
+        log.info("Initializing RestClient for OpenRouter at: {}", active.baseUrl());
         
-        // WHY: OpenAiApi is the low-level HTTP client. By setting a custom base-url, 
-        // we redirect API calls to any OpenAI-compatible endpoint (OpenRouter, local Ollama, etc.)
-        return OpenAiApi.builder()
+        return RestClient.builder()
                 .baseUrl(active.baseUrl())
-                .apiKey(active.apiKey())
+                .defaultHeader("Authorization", "Bearer " + active.apiKey())
+                .defaultHeader("Content-Type", "application/json")
+                .defaultHeader("HTTP-Referer", "http://localhost:9091")
+                .defaultHeader("X-Title", "SpringBoot AI Service")
                 .build();
-    }
-
-    @Bean
-    public OpenAiChatModel openAiChatModel(OpenAiApi openAiApi) {
-        AiProviderProperties.ProviderConfig active = properties.active();
-        
-        OpenAiChatOptions options = OpenAiChatOptions.builder()
-                .model(active.model())
-                .build();
-                
-        // WHY: OpenAiChatModel implements Spring AI's ChatModel interface. 
-        // By configuring it with different base URLs and models, the same code works across any OpenAI-compatible provider.
-        return OpenAiChatModel.builder()
-                .openAiApi(openAiApi)
-                .defaultOptions(options)
-                .build();
-    }
-
-    @Bean
-    public ChatClient chatClient(OpenAiChatModel chatModel) {
-        // WHY: ChatClient is Spring AI's high-level fluent API (similar to RestClient). 
-        // It wraps the ChatModel and provides a clean .prompt().user().call().content() chain.
-        return ChatClient.create(chatModel);
     }
 }

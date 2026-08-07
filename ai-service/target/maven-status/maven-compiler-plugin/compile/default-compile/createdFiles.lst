@@ -1,0 +1,14 @@
+com\ai\service\dto\ChatRequest.class
+com\ai\service\controller\AiController$OpenRouterMessage.class
+com\ai\service\AiServiceApplication.class
+com\ai\service\config\AiProviderProperties.class
+com\ai\service\security\JwtUtil.class
+com\ai\service\security\JwtAuthenticationFilter.class
+com\ai\service\dto\ChatResponse.class
+com\ai\service\config\AiProviderConfig.class
+com\ai\service\controller\AiController$OpenRouterResponse.class
+com\ai\service\controller\AiController.class
+com\ai\service\controller\AiController$OpenRouterRequest.class
+com\ai\service\config\SecurityConfig.class
+com\ai\service\controller\AiController$OpenRouterChoice.class
+com\ai\service\config\AiProviderProperties$ProviderConfig.class

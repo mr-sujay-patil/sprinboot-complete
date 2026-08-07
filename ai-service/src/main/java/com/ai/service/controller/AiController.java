@@ -6,11 +6,12 @@ import com.ai.service.dto.ChatResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.web.client.RestClient;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -19,8 +20,13 @@ import java.util.Map;
 @Slf4j
 public class AiController {
 
-    private final ChatClient chatClient;
+    private final RestClient restClient;
     private final AiProviderProperties properties;
+
+    public record OpenRouterMessage(String role, String content) {}
+    public record OpenRouterRequest(String model, List<OpenRouterMessage> messages) {}
+    public record OpenRouterChoice(OpenRouterMessage message) {}
+    public record OpenRouterResponse(List<OpenRouterChoice> choices) {}
 
     @PostMapping("/chat")
     public ChatResponse chat(@Valid @RequestBody ChatRequest request) {
@@ -35,13 +41,24 @@ public class AiController {
                 username, truncatedPrompt, properties.activeProvider());
 
         try {
-            // WHY: The ChatClient sends requests to OpenRouter using Spring AI's OpenAI-compatible API client.
-            String response = chatClient.prompt()
-                    .user(request.prompt())
-                    .call()
-                    .content();
+            AiProviderProperties.ProviderConfig active = properties.active();
+            OpenRouterRequest openRouterRequest = new OpenRouterRequest(
+                    active.model(),
+                    List.of(new OpenRouterMessage("user", request.prompt()))
+            );
 
-            return new ChatResponse(response, properties.active().model(), properties.activeProvider());
+            OpenRouterResponse apiResponse = restClient.post()
+                    .uri("/chat/completions")
+                    .body(openRouterRequest)
+                    .retrieve()
+                    .body(OpenRouterResponse.class);
+
+            String reply = "";
+            if (apiResponse != null && apiResponse.choices() != null && !apiResponse.choices().isEmpty()) {
+                reply = apiResponse.choices().get(0).message().content();
+            }
+
+            return new ChatResponse(reply, active.model(), properties.activeProvider());
         } catch (Exception e) {
             log.error("AI chat failed", e);
             throw new RuntimeException("AI provider error: " + e.getMessage());
