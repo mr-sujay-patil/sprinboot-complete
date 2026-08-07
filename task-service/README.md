@@ -1,68 +1,30 @@
-# Task Service — CRUD Microservice with Best Practices
+# Task Service — JPA & Resource Server Masterclass
 
-## Architecture
-This is a Spring Boot resource server microservice. It validates JWTs from an external authorization server, and exposes a RESTful API for performing CRUD operations on a `Task` entity.
+`task-service` is a backend resource server microservice responsible for task CRUD operations. It demonstrates Spring Data JPA best practices, validation, layered architectural boundaries, and stateless token validation.
 
-## Prerequisites
-- Java 21+
-- Maven
+---
 
-## Quick Start
-Run the application using the Spring Boot Maven Plugin:
-```bash
-mvn spring-boot:run
-```
-The application runs on port `9092`.
+## 1. Core Concepts Demonstrated
 
-## Best Practices Demonstrated
-| Practice | Where in Code |
-|----------|---------------|
-| Layered Architecture | Controller → Service → Repository |
-| DTO Pattern | TaskRequest, TaskResponse (entities never exposed) |
-| Manual Mapper | TaskMapper — explicit, no magic |
-| Global Exception Handling | GlobalExceptionHandler (@RestControllerAdvice) |
-| Bean Validation | @Valid + constraints on TaskRequest |
-| Pagination/Sorting | GET /api/tasks with Pageable |
-| EntityManager Demo | TaskCustomRepository — when/why to use |
-| Audit Fields | createdAt/updatedAt via @PrePersist/@PreUpdate |
-| Enum as String | @Enumerated(EnumType.STRING) — safe for schema evolution |
-| Resource Server JWT | JwtAuthenticationFilter — no DB, trusts token claims |
+### A. Resource Server Pattern (Stateless Token Validation)
+`task-service` does NOT communicate with a database containing user credentials, nor does it make REST/network calls to `auth-server` to validate requests.
+*   **How it works:** The microservice is configured with the same symmetric `jwt.secret` as `auth-server`. 
+*   **Verification:** When a request arrives, `JwtAuthenticationFilter` intercepts it, extracts the token, verifies the cryptographic signature locally, parses the user's roles, and updates the `SecurityContext`. If the token is valid, access is granted.
 
-## Endpoints
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| POST | `/api/tasks` | Create task | Required |
-| GET | `/api/tasks` | List tasks (paginated) | Required |
-| GET | `/api/tasks/{id}` | Get task by ID | Required |
-| PUT | `/api/tasks/{id}` | Update task | Required |
-| DELETE | `/api/tasks/{id}` | Delete task | Required |
-| GET | `/api/tasks/status/{status}` | Find by status | Required |
-| GET | `/api/tasks/demo/entitymanager/{status}`| EntityManager demo | Required |
+### B. Architectural Boundaries (DTO Pattern)
+*   **Entity vs DTO:** The database model `Task.java` is kept isolated. It is never exposed directly in REST controllers.
+*   **Input/Output DTOs:** Requests map to `TaskRequest.java` (validated via `@Valid`), and responses map to `TaskResponse.java`.
+*   **TaskMapper:** Handles conversion manually without dynamic reflection libraries (like ModelMapper), ensuring full type safety and compilation verification.
 
-## H2 Console
-You can access the in-memory database to inspect the tables and data.
-- **URL**: [http://localhost:9092/h2-console](http://localhost:9092/h2-console)
-- **JDBC URL**: `jdbc:h2:mem:taskdb`
-- **Username**: `sa`
-- **Password**: *(leave blank)*
+### C. Global Exception Boundaries
+*   Exceptions (e.g. `ResourceNotFoundException`) thrown anywhere in the service layer are caught by `GlobalExceptionHandler.java` (configured via `@RestControllerAdvice`).
+*   This maps exceptions to structured JSON responses, preventing stack traces from leaking to api clients.
 
-## End-to-End Test Flow
-1. **Get a JWT Token**: Obtain a valid JWT from the auth-server (running on port 9090).
-2. **Execute CRUD operations**:
-```bash
-# Create a new task
-curl -X POST http://localhost:9092/api/tasks \
-     -H "Authorization: Bearer <YOUR_TOKEN>" \
-     -H "Content-Type: application/json" \
-     -d '{"title": "Learn Spring", "status": "TODO"}'
+---
 
-# List tasks
-curl -X GET http://localhost:9092/api/tasks \
-     -H "Authorization: Bearer <YOUR_TOKEN>"
-```
+## 2. Technical Code Studies
 
-## Limitations
-This is a learning project:
-- Uses an H2 in-memory database (data is lost on restart).
-- No caching layer implemented.
-- No asynchronous messaging (e.g., Kafka or RabbitMQ).
+### Advanced JPA Techniques
+*   **`@PrePersist` / `@PreUpdate`**: Automates auditing fields (`createdAt`, `updatedAt`) without needing complex Spring Data Auditing configurations.
+*   **`@Enumerated(EnumType.STRING)`**: Persists enum values as varchar text (e.g., `IN_PROGRESS`) in H2 database instead of integer indexes (`1`). This ensures database schema migrations won't break if new enum constants are added.
+*   **EntityManager Integration (`TaskCustomRepositoryImpl.java`)**: Demonstrates how to write custom native queries or advanced JPA criteria searches using direct Hibernate/JPA `EntityManager` calls when standard Spring Data query methods are insufficient.
