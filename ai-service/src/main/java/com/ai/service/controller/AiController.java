@@ -35,8 +35,7 @@ public class AiController {
                 username, truncatedPrompt, properties.activeProvider());
 
         try {
-            // WHY: The ChatClient abstracts away the provider. Whether this is OpenRouter, 
-            // OpenAI, or a local LLM, the code is identical. The provider is determined purely by configuration.
+            // WHY: The ChatClient sends requests to OpenRouter using Spring AI's OpenAI-compatible API client.
             String response = chatClient.prompt()
                     .user(request.prompt())
                     .call()

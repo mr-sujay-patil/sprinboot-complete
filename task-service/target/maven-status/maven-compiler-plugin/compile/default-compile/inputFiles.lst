@@ -1,0 +1,16 @@
+C:\Users\x_jack_ripper\Documents\SpringBoot\task-service\src\main\java\com\task\service\config\SecurityConfig.java
+C:\Users\x_jack_ripper\Documents\SpringBoot\task-service\src\main\java\com\task\service\controller\TaskController.java
+C:\Users\x_jack_ripper\Documents\SpringBoot\task-service\src\main\java\com\task\service\dto\ErrorResponse.java
+C:\Users\x_jack_ripper\Documents\SpringBoot\task-service\src\main\java\com\task\service\dto\TaskRequest.java
+C:\Users\x_jack_ripper\Documents\SpringBoot\task-service\src\main\java\com\task\service\dto\TaskResponse.java
+C:\Users\x_jack_ripper\Documents\SpringBoot\task-service\src\main\java\com\task\service\entity\Task.java
+C:\Users\x_jack_ripper\Documents\SpringBoot\task-service\src\main\java\com\task\service\entity\TaskStatus.java
+C:\Users\x_jack_ripper\Documents\SpringBoot\task-service\src\main\java\com\task\service\exception\GlobalExceptionHandler.java
+C:\Users\x_jack_ripper\Documents\SpringBoot\task-service\src\main\java\com\task\service\exception\TaskNotFoundException.java
+C:\Users\x_jack_ripper\Documents\SpringBoot\task-service\src\main\java\com\task\service\mapper\TaskMapper.java
+C:\Users\x_jack_ripper\Documents\SpringBoot\task-service\src\main\java\com\task\service\repository\TaskCustomRepository.java
+C:\Users\x_jack_ripper\Documents\SpringBoot\task-service\src\main\java\com\task\service\repository\TaskRepository.java
+C:\Users\x_jack_ripper\Documents\SpringBoot\task-service\src\main\java\com\task\service\security\JwtAuthenticationFilter.java
+C:\Users\x_jack_ripper\Documents\SpringBoot\task-service\src\main\java\com\task\service\security\JwtUtil.java
+C:\Users\x_jack_ripper\Documents\SpringBoot\task-service\src\main\java\com\task\service\service\TaskService.java
+C:\Users\x_jack_ripper\Documents\SpringBoot\task-service\src\main\java\com\task\service\TaskServiceApplication.java

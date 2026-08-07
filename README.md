@@ -13,7 +13,7 @@ This project consists of 5 standalone Spring Boot microservices, each fulfilling
 | **`eureka-server`** | 8761 | 8761 | **Service Registry**: Acts as a central directory where all running microservice instances register their container IP address and port. |
 | **`api-gateway`** | 8080 | 8080 | **API Gateway**: Single entry point for external client traffic. Dynamically routes requests to backend services via Eureka service names (`lb://`). |
 | **`auth-server`** | 9090 | 9090 | **Identity Provider**: Authenticates user credentials against an H2 database and issues signed HMAC-SHA256 JWT tokens. |
-| **`ai-service`** | 9091 | 9091 | **AI Resource Server**: Provides Spring AI chat endpoints with multi-provider switching (OpenRouter, OpenAI). Validates JWT tokens from `auth-server`. |
+| **`ai-service`** | 9091 | 9091 | **AI Resource Server**: Provides Spring AI chat endpoints using OpenRouter. Validates JWT tokens from `auth-server`. |
 | **`task-service`** | 9092 | 9092 | **CRUD Resource Server**: Manages Task entities with pagination and clean layered architecture. Validates JWT tokens from `auth-server`. |
 
 ---
@@ -32,7 +32,7 @@ This project consists of 5 standalone Spring Boot microservices, each fulfilling
 1. **Client Request**: Client sends `POST http://localhost:8080/api/ai/chat` with `Authorization: Bearer <TOKEN>` and a prompt JSON.
 2. **Gateway Interception & Resolution**: Gateway matches `Path=/api/ai/**`, queries Eureka for `ai-service`, and routes to container `ai-service:9091`.
 3. **JWT Validation (Resource Server)**: `ai-service` intercepts the request in `JwtAuthenticationFilter`. It verifies the HMAC-SHA256 signature using the shared `JWT_SECRET` (matching `auth-server`'s key) and checks expiration. No database or `auth-server` network call is made—the JWT claims are trusted directly.
-4. **Spring AI Provider Invocation**: The configured `ChatClient` constructs an OpenAI-compatible request payload and dispatches it to the active provider (e.g. OpenRouter or OpenAI) using `OPENROUTER_API_KEY`.
+4. **Spring AI Provider Invocation**: The configured `ChatClient` constructs an OpenAI-compatible request payload and dispatches it to OpenRouter using `OPENROUTER_API_KEY`.
 5. **Response**: AI-generated response is returned back through `api-gateway` to the client.
 
 ### C. Task CRUD Flow (`/api/tasks/*`)

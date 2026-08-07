@@ -4,8 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
 
-// WHY: @EnableEurekaServer configures a registry that other microservices check in with.
-// It sets up the Eureka Server engine inside this Spring Boot context.
+// WHY: @EnableEurekaServer configures a discovery registry that microservices register with.
 @SpringBootApplication
 @EnableEurekaServer
 public class EurekaServerApplication {

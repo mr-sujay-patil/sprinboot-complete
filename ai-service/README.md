@@ -12,7 +12,7 @@ This project is part of a two-service architecture designed for learning modern 
 
 - **Java 21+**
 - **Maven 3.8+**
-- A valid API key for at least one AI provider (e.g., OpenRouter, OpenAI).
+- A valid OpenRouter API key (`OPENROUTER_API_KEY`).
 
 ## Quick Start
 
@@ -44,7 +44,7 @@ Client                     Auth Server (9090)              AI Service (9091)
   |                              |    3. Check expiration       |
   |                              |    4. Set SecurityContext    |
   |                              |    5. Forward to controller  |
-  |                              |    6. Call AI provider       |
+  |                              |    6. Call OpenRouter        |
   |<--- AI response -------------|------------------------------|
 ```
 
@@ -73,18 +73,13 @@ curl -X POST http://localhost:9091/api/ai/chat \
      -d '{"prompt":"Explain dependency injection in 5 words."}'
 ```
 
-## Switching Providers
+## Provider Configuration
 
-You can switch the underlying AI provider strictly through configuration — no code changes required. Just modify `ai.active-provider` in `application.yml` or set it via environment variables.
+The service uses OpenRouter as its exclusive AI provider via Spring AI's OpenAI-compatible HTTP client.
 
 | Provider   | active-provider value | Env Var for API Key | Model Example                    |
 |------------|-----------------------|---------------------|----------------------------------|
 | OpenRouter | `openrouter`          | `OPENROUTER_API_KEY`| meta-llama/llama-3.1-8b-instruct |
-| OpenAI     | `openai`              | `OPENAI_API_KEY`    | gpt-4o-mini                      |
-
-## Adding a New Provider
-
-Because both OpenRouter and OpenAI expose API contracts compatible with Spring AI's OpenAI autoconfiguration (e.g., `/v1/chat/completions`), you can add a new provider simply by inserting a YAML block under `ai.providers`. Zero Java code needs to change!
 
 ## How JWT Validation Works
 

@@ -1,0 +1,9 @@
+C:\Users\x_jack_ripper\Documents\SpringBoot\ai-service\src\main\java\com\ai\service\AiServiceApplication.java
+C:\Users\x_jack_ripper\Documents\SpringBoot\ai-service\src\main\java\com\ai\service\config\AiProviderConfig.java
+C:\Users\x_jack_ripper\Documents\SpringBoot\ai-service\src\main\java\com\ai\service\config\AiProviderProperties.java
+C:\Users\x_jack_ripper\Documents\SpringBoot\ai-service\src\main\java\com\ai\service\config\SecurityConfig.java
+C:\Users\x_jack_ripper\Documents\SpringBoot\ai-service\src\main\java\com\ai\service\controller\AiController.java
+C:\Users\x_jack_ripper\Documents\SpringBoot\ai-service\src\main\java\com\ai\service\dto\ChatRequest.java
+C:\Users\x_jack_ripper\Documents\SpringBoot\ai-service\src\main\java\com\ai\service\dto\ChatResponse.java
+C:\Users\x_jack_ripper\Documents\SpringBoot\ai-service\src\main\java\com\ai\service\security\JwtAuthenticationFilter.java
+C:\Users\x_jack_ripper\Documents\SpringBoot\ai-service\src\main\java\com\ai\service\security\JwtUtil.java

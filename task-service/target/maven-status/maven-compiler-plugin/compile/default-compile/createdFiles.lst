@@ -1,0 +1,17 @@
+com\task\service\config\SecurityConfig.class
+com\task\service\dto\TaskRequest.class
+com\task\service\dto\ErrorResponse.class
+com\task\service\exception\GlobalExceptionHandler.class
+com\task\service\exception\TaskNotFoundException.class
+com\task\service\repository\TaskCustomRepository.class
+com\task\service\TaskServiceApplication.class
+com\task\service\mapper\TaskMapper.class
+com\task\service\repository\TaskRepository.class
+com\task\service\dto\TaskResponse.class
+com\task\service\security\JwtAuthenticationFilter.class
+com\task\service\entity\TaskStatus.class
+com\task\service\controller\TaskController.class
+com\task\service\entity\Task$TaskBuilder.class
+com\task\service\service\TaskService.class
+com\task\service\entity\Task.class
+com\task\service\security\JwtUtil.class

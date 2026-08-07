@@ -36,7 +36,10 @@ public class AiProviderConfig {
         
         // WHY: OpenAiApi is the low-level HTTP client. By setting a custom base-url, 
         // we redirect API calls to any OpenAI-compatible endpoint (OpenRouter, local Ollama, etc.)
-        return new OpenAiApi(active.baseUrl(), active.apiKey());
+        return OpenAiApi.builder()
+                .baseUrl(active.baseUrl())
+                .apiKey(active.apiKey())
+                .build();
     }
 
     @Bean
@@ -49,7 +52,10 @@ public class AiProviderConfig {
                 
         // WHY: OpenAiChatModel implements Spring AI's ChatModel interface. 
         // By configuring it with different base URLs and models, the same code works across any OpenAI-compatible provider.
-        return new OpenAiChatModel(openAiApi, options);
+        return OpenAiChatModel.builder()
+                .openAiApi(openAiApi)
+                .defaultOptions(options)
+                .build();
     }
 
     @Bean

@@ -63,7 +63,6 @@ services:
     environment:
       - JWT_SECRET=${JWT_SECRET}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_SERVER_URL}
     depends_on:
       eureka-server:
